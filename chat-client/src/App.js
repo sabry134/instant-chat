@@ -97,7 +97,7 @@ function App() {
 
   useEffect(() => {
     fetch('https://instant-chat-ifw4.onrender.com/api/current_user', {
-      credentials: 'include' // Ensures cookies/session are sent
+      credentials: 'include' // Ensure cookies/session are sent
     })
       .then((res) => {
         console.log('Response received:', res);
@@ -113,7 +113,7 @@ function App() {
       .catch((err) => {
         console.error('Error fetching user:', err);
       });
-  
+
     return () => {
       if (ws.current) {
         console.log('Closing WebSocket');
@@ -121,17 +121,13 @@ function App() {
       }
     };
   }, []);
-  
-
 
   const initializeWebSocket = () => {
     if (ws.current) return;
     ws.current = new WebSocket('wss://instant-chat-ifw4.onrender.com');
-
     ws.current.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        // Handle delete event: remove the message from state
         if (message.type && message.type === 'delete') {
           setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
         } else {
@@ -145,27 +141,23 @@ function App() {
 
   const sendMessage = () => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN || input.trim() === '' || !user) return;
-
-    const truncatedInput = input.slice(0, 2000); // Limit message to 2000 characters
-
+    const truncatedInput = input.slice(0, 2000);
     const messagePayload = {
-      id: Date.now(), // unique identifier for deletion purposes
+      id: Date.now(),
       content: truncatedInput,
       author: {
-        id: user.id, // include the Discord id of the sender
+        id: user.id,
         username: user.username,
         avatar: user.avatar
           ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
           : ''
       }
     };
-
     ws.current.send(JSON.stringify(messagePayload));
     setInput('');
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
-  // Function for the admin to delete a message
   const deleteMessage = (messageId) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
     const deletePayload = { type: 'delete', id: messageId };
@@ -183,7 +175,7 @@ function App() {
     fetch('https://instant-chat-ifw4.onrender.com/auth/logout', { credentials: 'include' })
       .then(() => {
         setUser(null);
-        window.location.href = 'https://instant-chat-ifw4.onrender.com/auth/discord'; // Redirect to login
+        window.location.href = 'https://instant-chat-ifw4.onrender.com/auth/discord';
       })
       .catch((err) => console.error('Logout error:', err));
   };
@@ -213,7 +205,6 @@ function App() {
             )}
             <div style={styles.message}>
               <strong>{msg.author.username}</strong>
-              {/* Only the admin sees the Discord ID of the message sender */}
               {user.id === "495265351270137883" && (
                 <div style={{ fontSize: '12px', color: '#ccc' }}>
                   Discord ID: {msg.author.id}
@@ -221,7 +212,6 @@ function App() {
               )}
               <p>{msg.content}</p>
             </div>
-            {/* Render delete icon if the current user is the admin */}
             {user.id === "495265351270137883" && (
               <button onClick={() => deleteMessage(msg.id)} style={styles.deleteButton}>🗑️</button>
             )}
