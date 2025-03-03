@@ -12,7 +12,7 @@ const app = express();
 
 // Enable CORS for requests coming from your React app (localhost:3000)
 app.use(cors({
-  origin: 'https://sabry134.github.io/instant-chat',
+  origin: 'https://sabry134.github.io',
   credentials: true
 }));
 
