@@ -96,22 +96,33 @@ function App() {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
-    fetch('https://instant-chat-ifw4.onrender.com/api/current_user', { credentials: 'include' })
-      .then((res) => res.json())
+    fetch('https://instant-chat-ifw4.onrender.com/api/current_user', {
+      credentials: 'include' // Ensures cookies/session are sent
+    })
+      .then((res) => {
+        console.log('Response received:', res);
+        return res.json();
+      })
       .then((data) => {
+        console.log('Parsed data:', data);
         if (data) {
           setUser(data);
           initializeWebSocket();
         }
       })
-      .catch((err) => console.error('Error fetching user:', err));
-
+      .catch((err) => {
+        console.error('Error fetching user:', err);
+      });
+  
     return () => {
       if (ws.current) {
+        console.log('Closing WebSocket');
         ws.current.close();
       }
     };
   }, []);
+  
+
 
   const initializeWebSocket = () => {
     if (ws.current) return;
