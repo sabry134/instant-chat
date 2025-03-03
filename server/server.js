@@ -10,7 +10,9 @@ const cors = require('cors');
 
 const app = express();
 
-// Enable CORS for requests coming from your React app
+// If behind a proxy (like onRender), trust the first proxy
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin: 'https://sabry134.github.io',
   credentials: true
@@ -21,7 +23,7 @@ app.use(session({
   secret: 'your secret here',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: true, sameSite: 'none' }
+  cookie: { secure: true, sameSite: 'none' } // secure: true works with HTTPS
 }));
 
 app.use(passport.initialize());
@@ -52,22 +54,17 @@ app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/discord/callback',
   passport.authenticate('discord', { failureRedirect: 'https://instant-chat-ifw4.onrender.com/' }),
   (req, res) => {
-    // Successful authentication; redirect to the React chat app
     res.redirect('https://sabry134.github.io/instant-chat/');
   }
 );
 
 // API endpoint to return current user data
 app.get('/api/current_user', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json(req.user);
-  } else {
-    res.json(null);
-  }
+  res.json(req.isAuthenticated() ? req.user : null);
 });
 
 app.get('/auth/logout', (req, res) => {
-  req.session.destroy((err) => {
+  req.session.destroy(() => {
     res.clearCookie('connect.sid', { path: '/' });
     res.json({ success: true });
   });
